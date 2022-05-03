@@ -2,3 +2,4 @@
 /env/
 /treaning.py
 /.idea/
+**/__pycache__/

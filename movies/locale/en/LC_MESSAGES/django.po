@@ -1254,10 +1254,8 @@ msgid "actors"
 msgstr "Actors"
 
 #: .\movies\models.py:66
-#, fuzzy
-#| msgid "movies"
 msgid "movie"
-msgstr "MOVIES"
+msgstr "MOVIE"
 
 #: .\movies\models.py:67
 msgid "tv_show"

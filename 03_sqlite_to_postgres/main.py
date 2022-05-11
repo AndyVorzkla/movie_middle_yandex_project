@@ -26,6 +26,7 @@ def open_sqlite_db(db_path: str):
     finally:
         conn.close()
 
+
 @contextmanager
 def open_postgres_db(config: dict):
     """ Контекстный менеджер для PostgreSQL """
@@ -36,12 +37,6 @@ def open_postgres_db(config: dict):
         yield conn
     finally:
         conn.close()
-
-
-class DataConn:
-
-    def __int__(self, db_path: str):
-        pass
 
 
 def load_from_sqlite(sqlite_conn: sqlite3.Connection) -> dict:
@@ -70,6 +65,3 @@ if __name__ == '__main__':
     with open_sqlite_db(sqlite_db_path) as sqlite_conn, open_postgres_db(dsn) as psql_conn:
         data_sqlite = load_from_sqlite(sqlite_conn)
         load_to_postgresql(psql_conn, data_sqlite)
-
-        # with conn_connect(sqlite_db_path) as sqlite_conn, psycopg2.connect(**dsn, cursor_factory=DictCursor) as pg_conn:
-    #     load_from_sqlite(sqlite_conn, pg_conn)

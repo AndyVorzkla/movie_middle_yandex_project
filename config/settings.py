@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
 # load_doenv(), если не дан путь, то сначала устанавливает текущую папку и спускаясь к root папке пытается найти .env
 load_dotenv()
 

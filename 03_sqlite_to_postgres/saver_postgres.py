@@ -1,10 +1,11 @@
+import logging_setting
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import execute_batch
-from dataclasses import asdict
 from typing import Generator
 
 PAGE_SIZE = 500
 
+logger = logging_setting.base_logger
 
 class PostgresSaver:
     """ Загрузка данных в PostgreSQL """
@@ -23,6 +24,7 @@ class PostgresSaver:
         try:
             dataclasses_objects = next(data_generator)
             while dataclasses_objects:
+                logger.info(f'Add to {table_name}:{len(dataclasses_objects)} records')
                 match table_name:
                     case 'film_work':
                         query = 'INSERT INTO content.film_work' \
@@ -107,7 +109,6 @@ class PostgresSaver:
                         self.conn.commit()
                         dataclasses_objects = next(data_generator)
 
-        except StopIteration as err:
-            print(f'Stop iteration {table_name}')
 
-        # query = f'INSERT INTO {table_name} '
+        except StopIteration as err:
+            logger.warning(f'Stop iteration {table_name}')

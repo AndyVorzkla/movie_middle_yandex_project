@@ -5,16 +5,14 @@ from movies.validators import validate_0_100_rating
 
 
 class TimeStampedMixin(models.Model):
-    created = models.DateTimeField(auto_now_add=True)  # auto_now_add автоматически выставит дату создания записи
-    modified = models.DateTimeField(auto_now=True)  # auto_now изменится при каждом обновлении записи
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
 
 
 class UUIDMixin(models.Model):
-    # Типичная модель в Django использует число в качестве id. В таких ситуациях поле не описывается в модели.
-    # Явно объявляем id
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
@@ -22,9 +20,7 @@ class UUIDMixin(models.Model):
 
 
 class Genre(UUIDMixin, TimeStampedMixin):
-    # Первым аргументом обычно идёт человекочитаемое название поля
     name = models.CharField(_('genre_name'), max_length=255)
-    # blank=True делает поле необязательным для заполнения.
     description = models.TextField(_('description'), blank=True)
 
     def __str__(self):
@@ -33,7 +29,6 @@ class Genre(UUIDMixin, TimeStampedMixin):
     class Meta:
         # Ваши таблицы находятся в нестандартной схеме. Это нужно указать в классе модели
         db_table = '"content"."genre"'  # or "content\".\"genre"
-        # Следующие два поля отвечают за название модели в интерфейсе
         verbose_name = _('genre')
         verbose_name_plural = _('genres')
 
@@ -50,17 +45,12 @@ class Person(UUIDMixin, TimeStampedMixin):
         return self.full_name
 
     class Meta:
-        # managed = False
         db_table = "content\".\"person"
         verbose_name = _('actor')
         verbose_name_plural = _('actors')
 
 
 class Filmwork(UUIDMixin, TimeStampedMixin):
-    # class Type(models.TextChoices):
-    #     MOVIE = 'movie'
-    #     TV_SHOW = 'tv_show'
-
     TYPE_CHOICES = [
         ('movie', _('movie')),
         ('tv_show', _('tv_show')),
@@ -75,17 +65,13 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     # choices ожидает [(a,b), (a,b)] , где а фактическое значение, которое будет установлено в модели,
     # а b - удобное для чтение человеком
     type = models.TextField(_('type'), choices=TYPE_CHOICES)
-    genres = models.ManyToManyField(Genre, through='GenreFilmwork')
-    persons = models.ManyToManyField(Person, through='PersonFilmwork')
+    genres = models.ManyToManyField(Genre, through='GenreFilmwork', related_name='filmwork')
+    persons = models.ManyToManyField(Person, through='PersonFilmwork', related_name='filmwork')
 
     def __str__(self):
         return self.title
 
     class Meta:
-        # сообщает джанго что не нужно создавать таблицу по этой миграции, связывает с существующей
-        # и не нужно отслеживать изменения
-        # managed = False
-        # ordering = ['-creation_date']
         db_table = "content\".\"film_work"
         verbose_name = _('film_production')
         verbose_name_plural = _('film_productions')
@@ -98,14 +84,29 @@ class GenreFilmwork(UUIDMixin):
 
     class Meta:
         db_table = "content\".\"genre_film_work"
+        indexes = [
+            models.Index(fields=['film_work', 'genre'], name='film_work_genre_idx')
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=['film_work', 'genre'], name='film_work_genre_constraint')
+        ]
 
 
 class PersonFilmwork(UUIDMixin):
+
+    class RoleChoices(models.TextChoices):
+        ACTOR = 'actor', _('Actor')
+        DIRECTOR = 'director', _('Writer')
+        WRITER = 'writer', _('Director')
+        COMPOSER = 'composer', _('Composer')
+
     film_work = models.ForeignKey('Filmwork', on_delete=models.CASCADE)
     person = models.ForeignKey('Person', on_delete=models.CASCADE)
-    role = models.TextField(_('role'), null=True)
+    role = models.TextField(_('role'), choices=RoleChoices.choices, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # managed = False
         db_table = "content\".\"person_film_work"
+        indexes = [
+            models.Index(fields=['film_work', 'person'], name='film_work_person_idx')
+        ]

@@ -8,12 +8,12 @@ from psycopg2.extensions import connection as _connection
 from dotenv import load_dotenv
 from loader_sqlite import SQLiteLoader
 from saver_postgres import PostgresSaver
+import logging_setting
 
 load_dotenv()
-
+logger = logging_setting.base_logger
 # размер пачки
 BATCH_SIZE = 200
-
 
 @contextmanager
 def open_sqlite_db(db_path: str):
@@ -57,8 +57,8 @@ if __name__ == '__main__':
         'dbname': os.getenv('DB_NAME'),
         'user': os.getenv('DB_USER'),
         'password': os.getenv('DB_PASSWORD'),
-        'host': 'localhost',
-        'port': 5432,
+        'host': os.getenv('DB_HOST'),
+        'port': os.getenv('DB_HOST_PORT'),
         'options': '-c search_path=content',
     }
     sqlite_db_path = os.environ.get('DB_SQLITE_PATH')
